@@ -13,6 +13,7 @@ from keras.layers import merge
 from keras.layers import Reshape
 from keras.layers import ZeroPadding2D
 from keras.models import Model
+from keras.layers.normalization import BatchNormalization
 
 from ssd_layers import Normalize
 from ssd_layers import PriorBox
@@ -37,39 +38,39 @@ def SSD300(input_shape, num_classes=21):
     act_10 = model0.get_layer('activation_10').output
     act_22 = model0.get_layer('activation_22').output
     act_40 = model0.get_layer('activation_40').output
-    act_49 = model0.get_layer('activation_49').output
+#    act_49 = model0.get_layer('activation_49').output
 
     # FC6
-    net['fc6'] = Convolution2D(1024, 3, 3, 
-                                     activation='relu', border_mode='same',
-                                     name='fc6')(act_40)
+    net['fc6'] = Activation('relu',name='fc6_act')(BatchNormalization()(Convolution2D(1024, 3, 3, 
+                                     activation='linear', border_mode='same',
+                                     name='fc6')(act_40)))
     # x = Dropout(0.5, name='drop6')(x)
     # FC7
-    net['fc7'] = Convolution2D(1024, 1, 1, activation='relu',
-                               border_mode='same', name='fc7')(net['fc6'])
+    net['fc7'] = Activation('relu',name='fc7_act')(BatchNormalization()(Convolution2D(1024, 1, 1, activation='linear',
+                               border_mode='same', name='fc7')(net['fc6'])))
     # x = Dropout(0.5, name='drop7')(x)
     # Block 6
-    net['conv6_1'] = Convolution2D(256, 1, 1, activation='relu',
+    net['conv6_1'] = Activation('relu',name='conv6_1_act')(BatchNormalization()(Convolution2D(256, 1, 1, activation='linear',
                                    border_mode='same',
-                                   name='conv6_1')(net['fc7'])
-    net['conv6_2'] = Convolution2D(512, 3, 3, subsample=(2, 2),
-                                   activation='relu', border_mode='same',
-                                   name='conv6_2')(net['conv6_1'])
+                                   name='conv6_1')(net['fc7'])))
+    net['conv6_2'] = Activation('relu',name='conv6_2_act')(BatchNormalization()(Convolution2D(512, 3, 3, subsample=(2, 2),
+                                   activation='linear', border_mode='same',
+                                   name='conv6_2')(net['conv6_1'])))
     # Block 7
-    net['conv7_1'] = Convolution2D(128, 1, 1, activation='relu',
+    net['conv7_1'] = Activation('relu',name='conv7_1_act')(BatchNormalization()(Convolution2D(128, 1, 1, activation='linear',
                                    border_mode='same',
-                                   name='conv7_1')(net['conv6_2'])
+                                   name='conv7_1')(net['conv6_2'])))
     net['conv7_2'] = ZeroPadding2D()(net['conv7_1'])
-    net['conv7_2'] = Convolution2D(256, 3, 3, subsample=(2, 2),
-                                   activation='relu', border_mode='valid',
-                                   name='conv7_2')(net['conv7_2'])
+    net['conv7_2'] = Activation('relu',name='conv7_2_act')(BatchNormalization()(Convolution2D(256, 3, 3, subsample=(2, 2),
+                                   activation='linear', border_mode='valid',
+                                   name='conv7_2')(net['conv7_2'])))
     # Block 8
-    net['conv8_1'] = Convolution2D(128, 1, 1, activation='relu',
+    net['conv8_1'] = Activation('relu',name='conv8_1_act')(BatchNormalization()(Convolution2D(128, 1, 1, activation='linear',
                                    border_mode='same',
-                                   name='conv8_1')(net['conv7_2'])
-    net['conv8_2'] = Convolution2D(256, 3, 3, subsample=(2, 2),
-                                   activation='relu', border_mode='same',
-                                   name='conv8_2')(net['conv8_1'])
+                                   name='conv8_1')(net['conv7_2'])))
+    net['conv8_2'] = Activation('relu',name='conv8_2_act')(BatchNormalization()(Convolution2D(256, 3, 3, subsample=(2, 2),
+                                   activation='linear', border_mode='same',
+                                   name='conv8_2')(net['conv8_1'])))
     # Last Pool
     net['pool6'] = GlobalAveragePooling2D(name='pool6')(net['conv8_2'])
     # Prediction from conv4_3

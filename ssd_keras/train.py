@@ -206,22 +206,22 @@ class Generator(object):
                     targets = []
                     yield preprocess_input(tmp_inp), tmp_targets
 
-path_prefix = '/mnt/data/MachineLearning/onsite_pii2/JPEGImages/'#'../../frames/'
+path_prefix = '/mnt/efs/data/onsite_pii2/JPEGImages/'#'../../frames/'
 #path_prefix = '/mnt/autofs/beast/Engineering/sng/onsite_pii2/JPEGImages/'#'../../frames/'
-gen = Generator(gt, bbox_util, 16, path_prefix,
+gen = Generator(gt, bbox_util, 4, path_prefix,
                 train_keys, val_keys,
                 (input_shape[0], input_shape[1]), do_crop=False)
 
 model = SSD300(input_shape, num_classes=NUM_CLASSES)
 #model.load_weights('weights_SSD300.hdf5', by_name=True)
-#model.load_weights('./checkpoints_old/weights.29-3.28.hdf5', by_name=True)
+model.load_weights('./checkpointsV2-2/weights.52-3.24.hdf5', by_name=True)
 
 freeze = ['input_1', 'conv1_1', 'conv1_2', 'pool1',
           'conv2_1', 'conv2_2', 'pool2',
           'conv3_1', 'conv3_2', 'conv3_3', 'pool3']#,
 #           'conv4_1', 'conv4_2', 'conv4_3', 'pool4']
 
-for L in model.layers[:174]:
+for L in model.layers[:79]:
     #if L.name in freeze:
     L.trainable = False
 
@@ -234,7 +234,8 @@ callbacks = [keras.callbacks.ModelCheckpoint('./checkpoints/weights.{epoch:02d}-
                                              save_weights_only=False),
              keras.callbacks.LearningRateScheduler(schedule)]
 
-base_lr = 3e-4
+#base_lr = 3e-4
+base_lr = 1e-4
 #optim = keras.optimizers.Adam(lr=base_lr)
 # optim = keras.optimizers.RMSprop(lr=base_lr)
 optim = keras.optimizers.SGD(lr=base_lr, momentum=0.9)
@@ -242,10 +243,10 @@ model.compile(optimizer=optim,
               loss=MultiboxLoss(NUM_CLASSES, neg_pos_ratio=2.0).compute_loss)
 
 nb_epoch = 200
-history = model.fit_generator(gen.generate(True), 200,# gen.train_batches,
+history = model.fit_generator(gen.generate(True), 500,# gen.train_batches,
                               nb_epoch, verbose=1,
                               callbacks=callbacks,
                               validation_data=gen.generate(False),
-                              nb_val_samples=30,#gen.val_batches,
+                              nb_val_samples=100,#gen.val_batches,
                               nb_worker=1)
 
