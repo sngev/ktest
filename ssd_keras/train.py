@@ -214,7 +214,7 @@ gen = Generator(gt, bbox_util, 4, path_prefix,
 
 model = SSD300(input_shape, num_classes=NUM_CLASSES)
 #model.load_weights('weights_SSD300.hdf5', by_name=True)
-model.load_weights('./checkpointsV2-2/weights.52-3.24.hdf5', by_name=True)
+#model.load_weights('./checkpointsV2-2/weights.52-3.24.hdf5', by_name=True)
 
 freeze = ['input_1', 'conv1_1', 'conv1_2', 'pool1',
           'conv2_1', 'conv2_2', 'pool2',
@@ -235,7 +235,7 @@ callbacks = [keras.callbacks.ModelCheckpoint('./checkpoints/weights.{epoch:02d}-
              keras.callbacks.LearningRateScheduler(schedule)]
 
 #base_lr = 3e-4
-base_lr = 1e-4
+base_lr = 1e-3
 #optim = keras.optimizers.Adam(lr=base_lr)
 # optim = keras.optimizers.RMSprop(lr=base_lr)
 optim = keras.optimizers.SGD(lr=base_lr, momentum=0.9)
